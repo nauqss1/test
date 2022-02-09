@@ -2,23 +2,13 @@
 
 pragma solidity ^0.8.4;
 
-import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol';
-import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.2/contracts/token/ERC1155/extensions/ERC1155Burnable.sol';
-import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/security/Pausable.sol';
-import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.2/contracts/token/ERC1155/extensions/ERC1155Supply.sol';
+import './Ownable.sol';
+import './ERC1155Burnable.sol'; 
 
-abstract contract AbstractMintPassFactory is ERC1155Pausable, ERC1155Supply, ERC1155Burnable, Ownable {
+abstract contract AbstractMintPassFactory is ERC1155Burnable, Ownable {
     
     string public name_;
-    string public symbol_;   
-    
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
-    }    
+    string public symbol_;     
 
     function setURI(string memory baseURI) external onlyOwner {
         _setURI(baseURI);
@@ -37,7 +27,7 @@ abstract contract AbstractMintPassFactory is ERC1155Pausable, ERC1155Supply, ERC
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) internal virtual override(ERC1155, ERC1155Supply) {
+    ) internal virtual override(ERC1155) {
         super._mint(account, id, amount, data);
     }
 
@@ -46,7 +36,7 @@ abstract contract AbstractMintPassFactory is ERC1155Pausable, ERC1155Supply, ERC
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal virtual override(ERC1155, ERC1155Supply) {
+    ) internal virtual override(ERC1155) {
         super._mintBatch(to, ids, amounts, data);
     }
 
@@ -54,7 +44,7 @@ abstract contract AbstractMintPassFactory is ERC1155Pausable, ERC1155Supply, ERC
         address account,
         uint256 id,
         uint256 amount
-    ) internal virtual override(ERC1155, ERC1155Supply) {
+    ) internal virtual override(ERC1155) {
         super._burn(account, id, amount);
     }
 
@@ -62,7 +52,7 @@ abstract contract AbstractMintPassFactory is ERC1155Pausable, ERC1155Supply, ERC
         address account,
         uint256[] memory ids,
         uint256[] memory amounts
-    ) internal virtual override(ERC1155, ERC1155Supply) {
+    ) internal virtual override(ERC1155) {
         super._burnBatch(account, ids, amounts);
     }  
 
@@ -73,7 +63,11 @@ abstract contract AbstractMintPassFactory is ERC1155Pausable, ERC1155Supply, ERC
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal virtual override(ERC1155Pausable, ERC1155) {
+    ) internal virtual override(ERC1155) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }  
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155) returns (bool) {
+        return interfaceId == type(IERC1155Receiver).interfaceId || super.supportsInterface(interfaceId);
+    }
 }
